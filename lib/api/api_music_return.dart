@@ -4,7 +4,6 @@
 import 'package:dio/dio.dart';
 import 'package:music_player_miao/models/universal_bean.dart';
 import '../models/getComment_bean.dart';
-import '../models/getInfo_bean.dart';
 import '../models/search_bean.dart';
 
 const String _SearchURL = 'http://flyingpig.fun:10010/musics/search';

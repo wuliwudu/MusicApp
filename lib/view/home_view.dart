@@ -30,20 +30,20 @@ class _HomeViewState extends State<HomeView> {
   final List<Song> songs = [
     Song(
         artistPic: 'assets/img/music_artist.png',
-        title: '背对背拥抱1',
-        artist: '林俊杰 1',
+        title: 'Chuck',
+        artist: 'MAMAMOO',
         musicurl: 'audio/MAMAMOO.mp3',
         pic: 'assets/img/artist_pic.png'),
     Song(
         artistPic: 'assets/img/music_artist.png',
-        title: '背对背拥抱2',
-        artist: '林俊杰 2',
+        title: 'FLOWER',
+        artist: 'Jisoo',
         musicurl: 'audio/FLOWER.mp3',
         pic: 'assets/img/artist_pic.png'),
     Song(
         artistPic: 'assets/img/music_artist.png',
-        title: '背对背拥抱3',
-        artist: '林俊杰 3',
+        title: 'All eyes on me',
+        artist: 'Jisoo',
         musicurl: 'audio/All.mp3',
         pic: 'assets/img/artist_pic.png'),
   ];

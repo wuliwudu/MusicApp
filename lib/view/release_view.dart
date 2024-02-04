@@ -88,9 +88,9 @@ class _ReleaseViewState extends State<ReleaseView> {
                   const SizedBox(height: 30,),
                 ],
               ),
-              ///上传列表
+              ///音乐列表
               const Text(
-                "上传列表",
+                "音乐列表",
                 style: TextStyle(
                     fontSize: 20
                 ),
@@ -168,25 +168,6 @@ class _ReleaseViewState extends State<ReleaseView> {
                       );
                     },
                     ),
-                  ),
-                ),
-              ),
-              ///固定的提交审核
-              Center(
-                child: ElevatedButton(
-                  onPressed: _submitForReview,
-                  child: const Text(
-                    "提交审核",
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(const Color(0xff429482)),
-                    shape: MaterialStateProperty.all(
-                      RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30.0),
-                      ),
-                    ),
-                    fixedSize: MaterialStateProperty.all(const Size(120.0, 50.0)),
                   ),
                 ),
               ),
@@ -303,10 +284,6 @@ class _ReleaseViewState extends State<ReleaseView> {
                   ),
                 ],
               ),
-
-
-              // Display selected cover image
-              // Placeholder for the image
               const SizedBox(height: 20),
               const Text("歌名"),
               TextFieldColor(
@@ -478,17 +455,47 @@ class _ReleaseViewState extends State<ReleaseView> {
                   songName: enteredSongName,
                   artistName: enteredArtistName,
                 ));
-
-                print('Selected cover image: ${selectedCoverImage?.path}');
-                print('Entered Song Name: $enteredSongName');
-                print('Entered Artist Name: $enteredArtistName');
-
-                Navigator.pop(context); // Close the dialog after saving
-              } else {
-                // Handle the case where either selectedCoverImage or selectedMp3File is null
-                print('Error: Cover image or MP3 file is null.');
-              }
-            },
+                UniversalBean bean = await ReleaseApi().release(
+                    coverFile:selectedCoverImage,
+                    musicFile: selectedMp3File!,
+                    Authorization: AppData().currentToken,
+                    singerName: enteredArtistName,
+                    name: enteredSongName,
+                    introduce: '0');
+                Navigator.pop(context);
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius:BorderRadius.circular(10),
+                      ),
+                      title: Image.asset("assets/img/correct.png",width: 47,height: 46,),
+                      content: const Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('提交审核成功'),
+                          Text('审核通过后自动发布'),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          style: TextButton.styleFrom(
+                            backgroundColor: const Color(0xff429482),
+                            minimumSize: const Size(double.infinity, 50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5.0), // Adjust the radius as needed
+                            ),
+                          ),
+                          child: const Text('确认',style: TextStyle(color: Colors.white),),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              },
 
             style: TextButton.styleFrom(
               backgroundColor: const Color(0xff429482),
@@ -535,83 +542,6 @@ class _ReleaseViewState extends State<ReleaseView> {
     return File('');
   }
 
-  ///提交
-  void _submitForReview() {
-    if (songInfoList.isNotEmpty) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius:BorderRadius.circular(10),
-          ),
-          title: Image.asset("assets/img/correct.png",width: 47,height: 46,),
-          content: const Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('提交审核成功'),
-              Text('审核通过后自动发布'),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () async{
-                UniversalBean bean = await ReleaseApi().release(
-                    coverFile:coverImages[0],
-                    musicFile: selectedMp3File!,
-                    Authorization: AppData().currentToken,
-                    singerName: songInfoList[0].artistName,
-                    name: songInfoList[0].songName,
-                    introduce: '0');
-                if (bean.code==200) {
-                  setState((){
-                    coverImages.clear();
-                    songInfoList.clear();
-                  });
-                }
-                Navigator.pop(context);
-                // Close the dialog
-              },
-              style: TextButton.styleFrom(
-                backgroundColor: const Color(0xff429482),
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5.0), // Adjust the radius as needed
-                ),
-              ),
-              child: const Text('确认',style: TextStyle(color: Colors.white),),
-            ),
-          ],
-        ),
-      );
-    } else {
-      // Display an error message if the list is empty
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius:BorderRadius.circular(10),
-          ),
-          title: Image.asset("assets/img/warning.png",width: 47,height: 46,),
-          content: const Text('上传列表为空，无法提交审核。',textAlign: TextAlign.center,),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close the dialog
-              },
-              style: TextButton.styleFrom(
-                backgroundColor: const Color(0xff429482),
-                minimumSize: const Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5.0), // Adjust the radius as needed
-                ),
-              ),
-              child: const Text('确定',style: TextStyle(color: Colors.white),),
-            ),
-          ],
-        ),
-      );
-    }
-  }
   void _confirmDelete(BuildContext context, int index) {
     showDialog(
       context: context,
