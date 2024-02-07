@@ -2,9 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_player_miao/common_widget/app_data.dart';
+import 'package:music_player_miao/models/universal_bean.dart';
 import '../../view_model/home_view_model.dart';
 import 'package:audioplayers/audioplayers.dart';
 
+import '../api/api_music_likes.dart';
 import '../api/api_music_list.dart';
 import '../common_widget/Song_widegt.dart';
 import '../models/getMusicList_bean.dart';
@@ -21,8 +23,6 @@ class MusicView extends StatefulWidget {
 
 class _MusicViewState extends State<MusicView> {
   final homeVM = Get.put(HomeViewModel());
-  bool isGoodCommended = AppData().isLikes;
-  bool isStarCommended = false;
   bool _isDisposed = false;
   AppData appData = AppData();
   late int currentSongIndex;
@@ -31,6 +31,7 @@ class _MusicViewState extends State<MusicView> {
   List artist = [];
   List music = [];
   List likes = [];
+  List collection = [];
 
   Future<void> _fetchSonglistData() async {
     MusicListBean bean1 =
@@ -45,6 +46,7 @@ class _MusicViewState extends State<MusicView> {
       artist = [bean1.singerName,bean2.singerName,bean3.singerName];
       music = [bean1.name,bean2.name,bean3.name];
       likes = [bean1.likeOrNot,bean2.likeOrNot,bean3.likeOrNot];
+      collection = [bean1.collectOrNot,bean2.collectOrNot,bean3.collectOrNot];
     });
   }
 
@@ -54,6 +56,7 @@ class _MusicViewState extends State<MusicView> {
   late Duration _position;  late String artistName;
   late String musicName;
   late bool likesnot;
+  late bool collectionsnot;
 
   void playerInit() {
     _audioPlayer = AudioPlayer()..setSourceUrl('${widget.song.musicurl}');
@@ -62,6 +65,7 @@ class _MusicViewState extends State<MusicView> {
     artistName = '${widget.song.artist}';
     musicName = '${widget.song.title}';
     likesnot = widget.song.likes;
+    collectionsnot = widget.song.collection;
 
     _audioPlayer.onDurationChanged.listen((Duration d) {
       _duration = d;
@@ -100,6 +104,7 @@ class _MusicViewState extends State<MusicView> {
     artistName = artist[currentSongIndex];
     musicName = music[currentSongIndex];
     likesnot = likes[currentSongIndex];
+    collectionsnot = collection[currentSongIndex];
     _audioPlayer.resume();
   }
 
@@ -114,6 +119,7 @@ class _MusicViewState extends State<MusicView> {
     artistName = artist[currentSongIndex];
     musicName = music[currentSongIndex];
     likesnot = likes[currentSongIndex];
+    collectionsnot = collection[currentSongIndex];
     _audioPlayer.resume();
   }
 
@@ -248,10 +254,11 @@ class _MusicViewState extends State<MusicView> {
                     Row(
                       children: [
                         IconButton(
-                          onPressed: () {
+                          onPressed: () async{
+                            UniversalBean bean1 =
+                            await LikesApiMusic().likesMusic(musicId: currentSongIndex+1, Authorization: AppData().currentToken);
                             setState(() {
                               likesnot = !likesnot;
-                              appData.box.write('isLikes', isGoodCommended);
                             });
                           },
                           icon: Image.asset(
@@ -265,11 +272,11 @@ class _MusicViewState extends State<MusicView> {
                         IconButton(
                           onPressed: () {
                             setState(() {
-                              isStarCommended = !isStarCommended;
+                              collectionsnot = !collectionsnot;
                             });
                           },
                           icon: Image.asset(
-                            isStarCommended
+                            collectionsnot
                                 ? "assets/img/music_star.png"
                                 : "assets/img/music_star_un.png",
                             width: 29,
@@ -487,6 +494,7 @@ class _MusicViewState extends State<MusicView> {
         artistName = artist[currentSongIndex];
         musicName = music[currentSongIndex];
         likesnot = likes[currentSongIndex];
+        collectionsnot = collection[currentSongIndex];
         _audioPlayer.resume();
       });
     }

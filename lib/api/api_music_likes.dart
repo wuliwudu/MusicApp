@@ -26,22 +26,4 @@ class LikesApiMusic {
     print(response.data);
     return UniversalBean.formMap(response.data);
   }
-
-  ///取消点赞
-  Future<UniversalBean> unlikesMusic({
-    required int musicId,
-    required String Authorization,
-  }) async {
-    Response response = await dio.post(_LikesURL,
-        data: {
-          "Authorization": Authorization,
-        },
-        queryParameters: {'musicId': musicId},
-        options: Options(headers: {
-          'Authorization': Authorization,
-          'Content-Type': 'application/json;charset=UTF-8'
-        }));
-    print(response.data);
-    return UniversalBean.formMap(response.data);
-  }
 }
