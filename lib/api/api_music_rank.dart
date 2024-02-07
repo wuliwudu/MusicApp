@@ -7,9 +7,16 @@ const String _getRank = 'http://flyingpig.fun:10010/musics/rank-list';
 class GetRank {
   final Dio dio = Dio();
 
-  Future<RankBean> getRank() async {
+  Future<RankBean> getRank({required String Authorization,}) async {
     Response response = await dio.get(
         _getRank,
+        data: {
+          'Authorization': Authorization,
+        },
+        options: Options(headers: {
+          'Authorization': Authorization,
+          'Content-Type': 'application/json;charset=UTF-8'
+        })
     );
     print(response.data);
     return RankBean.formMap(response.data);

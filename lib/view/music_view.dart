@@ -5,7 +5,9 @@ import 'package:music_player_miao/common_widget/app_data.dart';
 import '../../view_model/home_view_model.dart';
 import 'package:audioplayers/audioplayers.dart';
 
+import '../api/api_music_list.dart';
 import '../common_widget/Song_widegt.dart';
+import '../models/getMusicList_bean.dart';
 
 class MusicView extends StatefulWidget {
   final Song song;
@@ -25,35 +27,41 @@ class _MusicViewState extends State<MusicView> {
   AppData appData = AppData();
   late int currentSongIndex;
 
-  List<String> song2 = [
-    "audio/MAMAMOO.mp3",
-    "audio/FLOWER.mp3",
-    "audio/All.mp3"
-  ];
-  List<String> artist = [
-    "林俊杰 1",
-    "林俊杰 2",
-    "林俊杰 3"
-  ];
-  List<String> music = [
-    "背对背拥抱 1",
-    "背对背拥抱 2",
-    "背对背拥抱 3"
-  ];
+  List song2 = [];
+  List artist = [];
+  List music = [];
+  List likes = [];
+
+  Future<void> _fetchSonglistData() async {
+    MusicListBean bean1 =
+    await GetMusic().getMusic1(Authorization: AppData().currentToken);
+    MusicListBean bean2 =
+    await GetMusic().getMusic2(Authorization: AppData().currentToken);
+    MusicListBean bean3 =
+    await GetMusic().getMusic3(Authorization: AppData().currentToken);
+
+    setState(() {
+      song2 = [bean1.musicPath,bean2.musicPath,bean3.musicPath];
+      artist = [bean1.singerName,bean2.singerName,bean3.singerName];
+      music = [bean1.name,bean2.name,bean3.name];
+      likes = [bean1.likeOrNot,bean2.likeOrNot,bean3.likeOrNot];
+    });
+  }
 
 
   late AudioPlayer _audioPlayer;
   late Duration _duration;
-  late Duration _position;
-  late String artistName;
+  late Duration _position;  late String artistName;
   late String musicName;
+  late bool likesnot;
 
   void playerInit() {
-    _audioPlayer = AudioPlayer()..setSourceAsset('${widget.song.musicurl}');
+    _audioPlayer = AudioPlayer()..setSourceUrl('${widget.song.musicurl}');
     _duration = const Duration();
     _position = const Duration();
     artistName = '${widget.song.artist}';
     musicName = '${widget.song.title}';
+    likesnot = widget.song.likes;
 
     _audioPlayer.onDurationChanged.listen((Duration d) {
       _duration = d;
@@ -88,10 +96,10 @@ class _MusicViewState extends State<MusicView> {
     } else {
       currentSongIndex = 0;
     }
-
-    _audioPlayer.setSourceAsset(song2[currentSongIndex]);
+    _audioPlayer.setSourceUrl(song2[currentSongIndex]);
     artistName = artist[currentSongIndex];
     musicName = music[currentSongIndex];
+    likesnot = likes[currentSongIndex];
     _audioPlayer.resume();
   }
 
@@ -102,9 +110,10 @@ class _MusicViewState extends State<MusicView> {
       currentSongIndex = 2;
     }
 
-    _audioPlayer.setSourceAsset(song2[currentSongIndex]);
+    _audioPlayer.setSourceUrl(song2[currentSongIndex]);
     artistName = artist[currentSongIndex];
     musicName = music[currentSongIndex];
+    likesnot = likes[currentSongIndex];
     _audioPlayer.resume();
   }
 
@@ -120,6 +129,7 @@ class _MusicViewState extends State<MusicView> {
   void initState() {
     playerInit();
     currentSongIndex = widget.initialSongIndex;
+    _fetchSonglistData();
     super.initState();
   }
 
@@ -203,7 +213,7 @@ class _MusicViewState extends State<MusicView> {
                       Positioned(
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(80),
-                          child: Image.asset(
+                          child: Image.network(
                             '${widget.song.artistPic}',
                             width: 230,
                             height: 230,
@@ -240,12 +250,12 @@ class _MusicViewState extends State<MusicView> {
                         IconButton(
                           onPressed: () {
                             setState(() {
-                              isGoodCommended = !isGoodCommended;
+                              likesnot = !likesnot;
                               appData.box.write('isLikes', isGoodCommended);
                             });
                           },
                           icon: Image.asset(
-                            isGoodCommended
+                            likesnot
                                 ? "assets/img/music_good.png"
                                 : "assets/img/music_good_un.png",
                             width: 29,
@@ -299,7 +309,7 @@ class _MusicViewState extends State<MusicView> {
                           thumbShape: RoundSliderThumbShape(
                               enabledThumbRadius: 7.0), // 调整拇指的大小
                           overlayShape:
-                              RoundSliderOverlayShape(overlayRadius: 12.0),
+                          RoundSliderOverlayShape(overlayRadius: 12.0),
                         ),
                         child: Slider(
                           min: 0,
@@ -354,11 +364,11 @@ class _MusicViewState extends State<MusicView> {
                             onPressed: playOrPause,
                             icon: _audioPlayer.state == PlayerState.playing
                                 ? Image.asset(
-                                    "assets/img/music_play.png",
-                                  )
+                              "assets/img/music_play.png",
+                            )
                                 : Image.asset(
-                                    "assets/img/music_pause.png",
-                                  )),
+                              "assets/img/music_pause.png",
+                            )),
                         const SizedBox(
                           width: 10,
                         ),
@@ -473,9 +483,10 @@ class _MusicViewState extends State<MusicView> {
     if (!_isDisposed) { // Check the flag before using the player
       setState(() {
         currentSongIndex = index;
-        _audioPlayer.setSourceAsset(song2[currentSongIndex]);
+        _audioPlayer.setSourceUrl(song2[currentSongIndex]);
         artistName = artist[currentSongIndex];
         musicName = music[currentSongIndex];
+        likesnot = likes[currentSongIndex];
         _audioPlayer.resume();
       });
     }

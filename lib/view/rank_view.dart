@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:music_player_miao/common_widget/app_data.dart';
 import '../api/api_music_rank.dart';
 import '../common_widget/rank_song_row.dart';
 import '../models/getRank_bean.dart';
@@ -25,7 +26,7 @@ class _RankViewState extends State<RankView> {
   }
 
   Future<void> _fetchSonglistData() async {
-    RankBean bean2 = await GetRank().getRank();
+    RankBean bean2 = await GetRank().getRank(Authorization: AppData().currentToken);
     setState(() {
       rankNames = bean2.data!.map((data) => data.name!).toList();
       rankSingerName = bean2.data!.map((data) => data.singerName!).toList();
@@ -163,17 +164,7 @@ class _RankViewState extends State<RankView> {
                                             width: 60,
                                             height: 60,
                                             fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
-                                              // 如果加载失败，返回一个默认图片
-                                              return Image.asset(
-                                                'assets/img/app_logo.png',
-                                                // 你的默认图片路径
-                                                width: 60,
-                                                height: 60,
-                                                fit: BoxFit.cover,
-                                              );
-                                            },
+
                                           ),
                                         ),
                                         const SizedBox(

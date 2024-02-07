@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_swiper_view/flutter_swiper_view.dart';
 import 'package:get/get.dart';
 import 'package:music_player_miao/api/api_music_return.dart';
+import 'package:music_player_miao/common_widget/app_data.dart';
 import 'package:music_player_miao/models/search_bean.dart';
 import 'package:music_player_miao/view/commend_view.dart';
 import '../../view_model/home_view_model.dart';
+import '../api/api_music_list.dart';
 import '../common_widget/Song_widegt.dart';
 import '../common_widget/list_cell.dart';
+import '../models/getMusicList_bean.dart';
 import 'music_view.dart';
 
 class HomeView extends StatefulWidget {
@@ -21,32 +24,61 @@ class _HomeViewState extends State<HomeView> {
   final TextEditingController _controller = TextEditingController();
   bool _isSearching = false;
 
+  void initState() {
+    super.initState();
+    _fetchSonglistData();
+  }
+  List<Song> songs = [];
+
+  Future<void> _fetchSonglistData() async {
+    MusicListBean bean1 =
+    await GetMusic().getMusic1(Authorization: AppData().currentToken);
+    MusicListBean bean2 =
+    await GetMusic().getMusic2(Authorization: AppData().currentToken);
+    MusicListBean bean3 =
+    await GetMusic().getMusic3(Authorization: AppData().currentToken);
+
+    setState(() {
+      songs = [
+        Song(
+            artistPic: bean1.coverPath!,
+            title: bean1.name!,
+            artist: bean1.singerName!,
+            musicurl: bean1.musicPath!,
+            pic: bean1.coverPath!,
+            id: bean1.id!,
+            likes: bean1.likeOrNot!,
+            collection: bean1.collectOrNot!),
+        Song(
+            artistPic: bean2.coverPath!,
+            title: bean2.name!,
+            artist: bean2.singerName!,
+            musicurl: bean2.musicPath!,
+            pic: bean2.coverPath!,
+            id: bean2.id!,
+            likes: bean2.likeOrNot!,
+            collection: bean2.collectOrNot!),
+        Song(
+            artistPic: bean3.coverPath!,
+            title: bean3.name!,
+            artist: bean3.singerName!,
+            musicurl: bean3.musicPath!,
+            pic: bean3.coverPath!,
+            id: bean3.id!,
+            likes: bean3.likeOrNot!,
+            collection: bean3.collectOrNot!),
+      ];
+    });
+  }
+
+
   ///轮播图
   List<Map> imgList = [
     {"image": "assets/img/banner.png"},
     {"image": "assets/img/banner.png"},
     {"image": "assets/img/banner.png"},
   ];
-  final List<Song> songs = [
-    Song(
-        artistPic: 'assets/img/music_artist.png',
-        title: 'Chuck',
-        artist: 'MAMAMOO',
-        musicurl: 'audio/MAMAMOO.mp3',
-        pic: 'assets/img/artist_pic.png'),
-    Song(
-        artistPic: 'assets/img/music_artist.png',
-        title: 'FLOWER',
-        artist: 'Jisoo',
-        musicurl: 'audio/FLOWER.mp3',
-        pic: 'assets/img/artist_pic.png'),
-    Song(
-        artistPic: 'assets/img/music_artist.png',
-        title: 'All eyes on me',
-        artist: 'Jisoo',
-        musicurl: 'audio/All.mp3',
-        pic: 'assets/img/artist_pic.png'),
-  ];
+
   List<String> _filteredData = [];
 
   Future<void> _filterData(String query) async {
@@ -55,7 +87,8 @@ class _HomeViewState extends State<HomeView> {
       if (bean.code == 200) {
         setState(() {
           _filteredData = bean.data
-              ?.map((data) => "${data.name} ") // Adjust this based on your data structure
+              ?.map((data) =>
+          "${data.name} ") // Adjust this based on your data structure
               .toList() ??
               [];
           _isSearching = true;
@@ -67,7 +100,6 @@ class _HomeViewState extends State<HomeView> {
       });
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +120,7 @@ class _HomeViewState extends State<HomeView> {
           activeColor: const Color(0xff429482), // Color of active dot
         ),
       ),
-      autoplay: true,
+      // autoplay: true,
       autoplayDelay: 3000,
     );
     return Container(
@@ -114,7 +146,7 @@ class _HomeViewState extends State<HomeView> {
                     Text(
                       '喵听',
                       style:
-                          TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
+                      TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(
                       width: 10,
@@ -122,7 +154,7 @@ class _HomeViewState extends State<HomeView> {
                     Text(
                       '你的云端音乐库',
                       style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                      TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
@@ -149,7 +181,7 @@ class _HomeViewState extends State<HomeView> {
                       child: TextField(
                         controller: _controller,
                         onChanged: (query) {
-                          setState(() async{
+                          setState(() async {
                             _filterData(query);
                           });
                         },
@@ -185,8 +217,8 @@ class _HomeViewState extends State<HomeView> {
                         height: 150,
                         width: 345,
                         decoration: BoxDecoration(
-                            color:  const Color(0xffF9F2AF).withOpacity(0.7),
-                            ),
+                          color: const Color(0xffF9F2AF).withOpacity(0.7),
+                        ),
                         child: ListView.builder(
                           padding: EdgeInsets.zero,
                           itemCount: _filteredData.length,
@@ -232,7 +264,7 @@ class _HomeViewState extends State<HomeView> {
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
                   return ListTile(
-                    leading: Image.asset(songs[index].pic),
+                    leading: Image.network(songs[index].pic),
                     title: Text(
                       songs[index].title,
                       style: const TextStyle(fontSize: 18, color: Colors.black),
@@ -243,7 +275,7 @@ class _HomeViewState extends State<HomeView> {
                     ),
                     trailing: InkWell(
                       onTap: () {
-                        _bottomSheet(context,index);
+                        _bottomSheet(context, index);
                       },
                       child: Image.asset('assets/img/More.png'),
                     ),
@@ -252,7 +284,9 @@ class _HomeViewState extends State<HomeView> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => MusicView(
-                              song: songs[index], initialSongIndex: index),
+                            song: songs[index],
+                            initialSongIndex: index,
+                          ),
                         ),
                       );
                     },
@@ -291,110 +325,112 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Future _bottomSheet(BuildContext context,int index) {
+  Future _bottomSheet(BuildContext context, int index) {
     return showModalBottomSheet(
         context: context,
         backgroundColor: Colors.white,
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
         builder: (context) => Container(
-              height: 210,
-              padding: const EdgeInsets.only(top: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+          height: 210,
+          padding: const EdgeInsets.only(top: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  Column(
                     children: [
-                      Column(
-                        children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: Image.asset("assets/img/list_add.png"),
-                            iconSize: 60,
-                          ),
-                          const Text("加入歌单")
-                        ],
+                      IconButton(
+                        onPressed: () {},
+                        icon: Image.asset("assets/img/list_add.png"),
+                        iconSize: 60,
                       ),
-                      Column(
-                        children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: Image.asset("assets/img/list_download.png"),
-                            iconSize: 60,
-                          ),
-                          const Text("下载")
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: Image.asset("assets/img/list_collection.png"),
-                            iconSize: 60,
-                          ),
-                          const Text("收藏")
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          IconButton(
-                            onPressed: () {},
-                            icon: Image.asset("assets/img/list_good.png"),
-                            iconSize: 60,
-                          ),
-                          const Text("点赞")
-                        ],
-                      ),
-                      Column(
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              Get.to(() => CommentView(initialSongIndex: index,));
-                            },
-                            icon: Image.asset("assets/img/list_comment.png"),
-                            iconSize: 60,
-                          ),
-                          const Text("评论")
-                        ],
-                      ),
+                      const Text("加入歌单")
                     ],
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    child: const Text(
-                      "查看详情页",
-                      style: TextStyle(color: Colors.black, fontSize: 18),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xffE6F4F1),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
+                  Column(
+                    children: [
+                      IconButton(
+                        onPressed: () {},
+                        icon: Image.asset("assets/img/list_download.png"),
+                        iconSize: 60,
                       ),
-                    ),
+                      const Text("下载")
+                    ],
                   ),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xff429482),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
+                  Column(
+                    children: [
+                      IconButton(
+                        onPressed: () {},
+                        icon: Image.asset("assets/img/list_collection.png"),
+                        iconSize: 60,
                       ),
-                    ),
-                    child: const Text(
-                      "取消",
-                      style: TextStyle(color: Colors.black, fontSize: 18),
-                    ),
+                      const Text("收藏")
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      IconButton(
+                        onPressed: () {},
+                        icon: Image.asset("assets/img/list_good.png"),
+                        iconSize: 60,
+                      ),
+                      const Text("点赞")
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Get.to(() => CommentView(
+                            initialSongIndex: index,
+                          ));
+                        },
+                        icon: Image.asset("assets/img/list_comment.png"),
+                        iconSize: 60,
+                      ),
+                      const Text("评论")
+                    ],
                   ),
                 ],
               ),
-            ));
+              const SizedBox(
+                height: 10,
+              ),
+              ElevatedButton(
+                onPressed: () {},
+                child: const Text(
+                  "查看详情页",
+                  style: TextStyle(color: Colors.black, fontSize: 18),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xffE6F4F1),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero,
+                  ),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xff429482),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero,
+                  ),
+                ),
+                child: const Text(
+                  "取消",
+                  style: TextStyle(color: Colors.black, fontSize: 18),
+                ),
+              ),
+            ],
+          ),
+        ));
   }
 }
